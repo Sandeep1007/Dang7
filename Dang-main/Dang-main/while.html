@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dang - Gambling Game</title>
+  <link rel="icon" href="dice.png">
+  <link rel="for" href="for.html">
+  <style>
+    /* Reset some basic styles for consistency */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: url('https://source.unsplash.com/1600x900/?gambling') no-repeat center center/cover;
+      color: #333;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    /* Header styles */
+    header {
+      background-color: rgba(34, 34, 34, 0.9);
+      color: #fff;
+      padding: 20px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    header nav .btn {
+      margin-left: 10px;
+    }
+
+    /* Main styles */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hero {
+      background: url('3d.jpg') no-repeat center center/cover;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #fff;
+      padding: 20px;
+      position: relative;
+      perspective: 1000px;
+    }
+
+    .hero h2 {
+      font-size: 48px;
+      margin-bottom: 20px;
+      transform: rotateX(30deg);
+      animation: text3d 3s infinite alternate;
+    }
+
+    .hero p {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .hero .hero-buttons .btn {
+      margin: 10px;
+      transform: rotateY(20deg);
+      transition: transform 0.3s ease;
+    }
+
+    .hero .hero-buttons .btn:hover {
+      transform: rotateY(0deg) scale(1.1);
+    }
+
+    /* Button styles */
+    .btn {
+      display: inline-block;
+      font-size: 16px;
+      padding: 10px 20px;
+      border: none;
+      background-color: #89e0e0;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:hover {
+      background-color: #005f73;
+      transform: translateY(-3px);
+    }
+
+    /* Footer styles */
+    footer {
+      background-color: rgba(34, 34, 34, 0.9);
+      color: #fff;
+      text-align: center;
+      padding: 10px 0;
+      box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      header .container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .hero h2 {
+        font-size: 36px;
+      }
+
+      .hero p {
+        font-size: 18px;
+      }
+
+      .btn {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+    }
+
+    @keyframes text3d {
+      from {
+        transform: rotateX(30deg);
+        text-shadow: 0 1px 0 #555, 0 2px 0 #333, 0 3px 0 #111, 0 4px 0 #000, 0 5px 10px rgba(0, 0, 0, 0.5);
+      }
+      to {
+        transform: rotateX(0deg);
+        text-shadow: 0 1px 0 #222, 0 2px 0 #000, 0 3px 0 #000, 0 4px 0 #000, 0 5px 10px rgba(0, 0, 0, 0.7);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <h1 class="logo">Dang</h1>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <h2>Welcome to Dang</h2>
+      <div class="hero-buttons">
+        <button class="btn hero-btn" id="heroPlayButton"><a href="for.html">Play Now</a></button>
+        <button class="btn hero-btn" id="heroConnectWalletButton"><a href="popup.html">Connect Wallet</a></button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Dang. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Game</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas {
+      background-color: #000;
+    }
+
+    .buttons {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .buttons button {
+      background-color: #4CAF50;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    .buttons button:hover {
+      background-color: #3e8e41;
+    }
+
+    #add-ball {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgb(91, 210, 91);
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 15px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .bet-bar {
+      position: absolute;
+      top: 70px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bet-bar input {
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    .bet-bar button {
+      background-color: #008CBA;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .bet-bar button:hover {
+      background-color: #006D9C;
+    }
+
+    .score-board {
+      position: absolute;
+      top: 160px;
+      right: 10px;
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="gameCanvas" width="800" height="800"></canvas>
+  <div id="add-ball">Add Ball</div>
+  <div class="buttons">
+    <button>Cash In</button>
+    <button>Cash Out</button>
+  </div>
+
+  <div class="bet-bar">
+    <input type="number" id="betAmount" placeholder="Enter your bet amount">
+    <button id="bet-button">Place Bet</button>
+  </div>
+
+  <div class="score-board">
+    <p>Score: <span id="score">0</span></p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const WIDTH = 800;
+    const HEIGHT = 800;
+    const BALL_RADIUS = 7;
+    const OBSTACLE_RADIUS = 4;
+    const GRAVITY = 0.2;
+    const HORIZONTAL_FRICTION = 0.4;
+    const VERTICAL_FRICTION = 0.8;
+    let balls = [];
+    const obstacles = [];
+    const sinks = [];
+    let score = 0;
+    let betAmount = 0;
+
+    // Create obstacles in a pyramid shape
+    const rows = 16;
+    for (let row = 2; row < rows; row++) {
+      const numObstacles = row + 1;
+      const y = row * 35;
+      const spacing = 36;
+      for (let col = 0; col < numObstacles; col++) {
+        const x = WIDTH / 2 - spacing * (row / 2 - col);
+        obstacles.push({ x, y, radius: OBSTACLE_RADIUS });
+      }
+    }
+
+    // Create sinks at the bottom as rectangles
+    const sinkWidth = 36;
+    const NUM_SINKS = 15;
+    for (let i = 0; i < NUM_SINKS; i++) {
+      const x = WIDTH / 2 + (i - 7.5) * sinkWidth;
+      const y = HEIGHT - 240;
+      sinks.push({ x, y, width: sinkWidth, height: sinkWidth, score: getSinkScore(i) });
+    }
+
+    function getSinkScore(index) {
+      if (index === 0 || index === NUM_SINKS - 1) return 30;
+      if (index === 1 || index === NUM_SINKS - 2) return 20;
+      if (index === 2 || index === NUM_SINKS - 3) return 10;
+      if (index===4 || index=== NUM_SINKS- 5)return 1;
+      return 0.5;
+    }
+
+    class Ball {
+      constructor(x, y, radius, color) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
+        this.vx = (Math.random() * 2 - 1) * 2;
+        this.vy = 0;
+        this.stopped = false;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      update() {
+        if (this.stopped) return;
+
+        this.vy += GRAVITY;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Collision with obstacles
+        obstacles.forEach(obstacle => {
+          const dist = Math.hypot(this.x - obstacle.x, this.y - obstacle.y);
+          if (dist < this.radius + obstacle.radius) {
+            const angle = Math.atan2(this.y - obstacle.y, this.x - obstacle.x);
+            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            this.vx = Math.cos(angle) * speed * HORIZONTAL_FRICTION;
+            this.vy = Math.sin(angle) * speed * VERTICAL_FRICTION;
+            const overlap = this.radius + obstacle.radius - dist;
+            this.x += Math.cos(angle) * overlap;
+            this.y += Math.sin(angle) * overlap;
+          }
+        });
+
+        // Collision with sinks
+        sinks.forEach(sink => {
+          if (
+            this.x > sink.x - sink.width / 2 &&
+            this.x < sink.x + sink.width / 2 &&
+            this.y + this.radius > sink.y - sink.height / 2
+          ) {
+            this.vx = 0;
+            this.vy = 0;
+            this.stopped = true;
+            updateScore(sink.score * betAmount); // Subtract the bet amount from the sink score
+          }
+        });
+      }
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = 'white';
+      obstacles.forEach(obstacle => {
+        ctx.beginPath();
+        ctx.arc(obstacle.x, obstacle.y, obstacle.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+      });
+    }
+
+    function drawSinks() {
+      ctx.fillStyle = 'white';
+      sinks.forEach(sink => {
+        ctx.fillRect(sink.x, sink.y - sink.height / 2, sink.width, sink.height);
+        ctx.font = '15px Arial';
+        ctx.fillStyle = 'black';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${sink.score}`, sink.x + sink.width / 2, sink.y - sink.height / 4);
+        ctx.fillStyle = 'white';
+      });
+    }
+
+    function addBall() {
+      const x = WIDTH / 2;
+      const newBall = new Ball(x, 50, BALL_RADIUS, 'red');
+      balls.push(newBall);
+    }
+
+    document.getElementById('add-ball').addEventListener('click', addBall);
+
+    function draw() {
+      ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      drawObstacles();
+      drawSinks();
+      balls.forEach(ball => {
+        ball.draw();
+        ball.update();
+      });
+    }
+
+    function update() {
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    update();
+
+    function updateScore(points) {
+      score += points;
+      document.getElementById('score').innerText = score;
+    }
+
+    document.getElementById('bet-button').addEventListener('click', () => {
+      const betValue = document.getElementById('betAmount').value;
+      if (betValue) {
+        betAmount = parseInt(betValue);
+        alert(`You have placed a bet of $${betAmount}`);
+      } else {
+        alert('Please enter a bet amount');
+      }
+    });
+
+    function resetGame() {
+      balls = [];
+      score = 0;
+      betAmount = 0;
+      document.getElementById('score').innerText = score;
+      document.getElementById('betAmount').value = '';
+    }
+
+    document.getElementById('add-ball').addEventListener('click', addBall);
+
+    document.getElementById('reset-button').addEventListener('click', resetGame);
+  </script>
+</body>
+
+</html>
